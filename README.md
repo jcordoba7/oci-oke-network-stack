@@ -4,6 +4,28 @@ Versión **1.1.0** para OCI Resource Manager. Crea una VCN nueva con API de Kube
 
 Este stack crea **sólo la red**. El cluster y sus node pools se crean después con el mismo CNI.
 
+## Descarga lista para Resource Manager
+
+[Descargar ZIP v1.1.0](https://github.com/jcordoba7/oci-oke-network-stack/releases/download/v1.1.0/oke-network-resource-manager-v1.1.0.zip) · [Checksum SHA-256](https://github.com/jcordoba7/oci-oke-network-stack/releases/download/v1.1.0/oke-network-resource-manager-v1.1.0.zip.sha256) · [Ver release](https://github.com/jcordoba7/oci-oke-network-stack/releases/tag/v1.1.0)
+
+Descarga el ZIP y cárgalo directamente como configuración de Terraform en Resource Manager. No necesitas comprimir el repositorio ni instalar Python. El generador de `scripts/` se mantiene para crear tu propio paquete.
+
+## Diagramas de referencia
+
+### Flannel: API y workers privados, Load Balancer público
+
+[![Diagrama oficial de Oracle: Flannel con API privado, workers privados y Load Balancer público](https://docs.oracle.com/en-us/iaas/Content/ContEng/images/conteng-network-flannel-eg2.png)](https://docs.oracle.com/en-us/iaas/Content/ContEng/images/conteng-network-flannel-eg2.png)
+
+Fuente: [Oracle Cloud Infrastructure Documentation — Example 2, Flannel](https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengnetworkconfigexample.htm#example-flannel-cni-privatek8sapi_privateworkers_publiclb).
+
+### OCI VCN-Native: API, workers y pods privados, Load Balancer público
+
+[![Diagrama oficial de Oracle: OCI VCN-Native con API privado, workers y pods privados y Load Balancer público](https://docs.oracle.com/en-us/iaas/Content/ContEng/images/conteng-network-oci-cni-eg2.png)](https://docs.oracle.com/en-us/iaas/Content/ContEng/images/conteng-network-oci-cni-eg2.png)
+
+Fuente: [Oracle Cloud Infrastructure Documentation — Example 4, OCI VCN-Native](https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengnetworkconfigexample.htm#example-oci-cni-privatek8sapi_privateworkers_publiclb).
+
+Los diagramas pertenecen a Oracle y se muestran desde su documentación oficial. Sus nombres, CIDR y distribución entre dominios de disponibilidad son ilustrativos; consulta las adaptaciones y parámetros de este stack antes de desplegar.
+
 ## Selector de CNI
 
 | Configuración | Flannel | OCI VCN-Native Pod Networking |
