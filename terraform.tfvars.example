@@ -1,0 +1,29 @@
+# Para CLI local: autentica el provider OCI con tu método habitual.
+# Resource Manager toma región y compartment del formulario; no subas credenciales.
+compartment_ocid = "ocid1.compartment.oc1..REEMPLAZAR"
+region           = "sa-bogota-1"
+cni_type         = "FLANNEL_OVERLAY" # o "OCI_VCN_IP_NATIVE"
+name_prefix      = "oke-prod"
+vcn_name         = "vcn-oke-prod"
+vcn_dns_label    = "okeprod"
+vcn_cidr         = "10.2.0.0/16"
+
+api_subnet_name     = "subnet-oke-prod-api-private"
+api_subnet_cidr     = "10.2.0.0/28"
+workers_subnet_name = "subnet-oke-prod-workers-private"
+workers_subnet_cidr = "10.2.20.0/24"
+lb_subnet_name      = "subnet-oke-prod-lb-public"
+lb_subnet_cidr      = "10.2.10.0/24"
+bastion_subnet_name = "subnet-oke-prod-bastion-private"
+bastion_subnet_cidr = "10.2.40.0/24"
+
+# Sólo se usan con OCI_VCN_IP_NATIVE; adaptar a la VCN elegida.
+pods_subnet_name = "subnet-oke-prod-pods-private"
+pods_subnet_cidr = "10.2.64.0/19"
+
+api_admin_cidrs            = ""
+lb_source_cidrs            = "0.0.0.0/0"
+lb_listener_ports          = "80,443"
+allow_worker_internet_tcp  = true
+allow_pod_internet_https   = true
+allow_bastion_ssh          = false

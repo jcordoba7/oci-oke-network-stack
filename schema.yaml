@@ -1,0 +1,211 @@
+title: 'Red OCI para OKE privado: Flannel o VCN-Native'
+description: VCN, cuatro subredes para Flannel o cinco para OCI VCN-Native, gateways, rutas y listas de seguridad.
+  No crea OKE.
+schemaVersion: 1.1.0
+version: 1.1.0
+locale: en
+variableGroups:
+- title: Ubicación, CNI y nombres base
+  variables:
+  - compartment_ocid
+  - cni_type
+  - name_prefix
+- title: VCN
+  variables:
+  - vcn_name
+  - vcn_cidr
+  - vcn_dns_label
+- title: API privado
+  variables:
+  - api_subnet_name
+  - api_subnet_cidr
+- title: Workers privados
+  variables:
+  - workers_subnet_name
+  - workers_subnet_cidr
+- title: Load Balancer público
+  variables:
+  - lb_subnet_name
+  - lb_subnet_cidr
+- title: Bastion privado
+  variables:
+  - bastion_subnet_name
+  - bastion_subnet_cidr
+- title: Pods privados (OCI VCN-Native)
+  variables:
+  - pods_subnet_name
+  - pods_subnet_cidr
+  - allow_pod_internet_https
+  visible:
+    eq:
+    - ${cni_type}
+    - OCI_VCN_IP_NATIVE
+- title: Reglas opcionales
+  variables:
+  - api_admin_cidrs
+  - lb_source_cidrs
+  - lb_listener_ports
+  - allow_worker_internet_tcp
+  - allow_bastion_ssh
+variables:
+  compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Compartment de destino
+    description: OCID del compartment existente donde se creará toda la red.
+    required: true
+  region:
+    type: string
+    title: Región OCI
+    description: En Resource Manager se completa con la región del stack.
+    required: true
+    default: sa-bogota-1
+    visible: false
+  cni_type:
+    type: enum
+    title: Tipo de red de pods (CNI)
+    description: 'FLANNEL_OVERLAY: Flannel. OCI_VCN_IP_NATIVE: OCI VCN-Native Pod Networking. Debe coincidir con
+      el CNI del nuevo cluster.'
+    required: true
+    default: FLANNEL_OVERLAY
+    enum:
+    - FLANNEL_OVERLAY
+    - OCI_VCN_IP_NATIVE
+  name_prefix:
+    type: string
+    title: Prefijo de recursos auxiliares
+    description: Prefijo de gateways, tablas de rutas, DHCP y listas de seguridad.
+    required: true
+    default: oke-net
+  vcn_name:
+    type: string
+    title: Nombre de la VCN
+    description: Nombre visible de la VCN nueva.
+    required: true
+    default: vcn-oke
+  vcn_cidr:
+    type: string
+    title: CIDR de la VCN
+    description: IPv4 canónico /16 a /30. Debe contener todas las subredes.
+    required: true
+    default: 10.0.0.0/16
+  vcn_dns_label:
+    type: string
+    title: Etiqueta DNS de la VCN
+    description: 1 a 15 caracteres alfanuméricos; debe comenzar con una letra.
+    required: true
+    default: okevcn
+  api_subnet_name:
+    type: string
+    title: Nombre de la subred API
+    description: Subred regional privada del endpoint de Kubernetes.
+    required: true
+    default: subnet-oke-api-private
+  api_subnet_cidr:
+    type: string
+    title: CIDR de la subred API
+    description: Privada. /28 predeterminado da más espacio que el /30 del ejemplo.
+    required: true
+    default: 10.0.0.0/28
+  workers_subnet_name:
+    type: string
+    title: Nombre de la subred workers
+    description: Subred regional privada de nodos OKE.
+    required: true
+    default: subnet-oke-workers-private
+  workers_subnet_cidr:
+    type: string
+    title: CIDR de la subred workers
+    description: Debe pertenecer a la VCN y no solaparse con otra subred.
+    required: true
+    default: 10.0.1.0/24
+  lb_subnet_name:
+    type: string
+    title: Nombre de la subred Load Balancer
+    description: Subred regional pública para Load Balancers.
+    required: true
+    default: subnet-oke-lb-public
+  lb_subnet_cidr:
+    type: string
+    title: CIDR de la subred Load Balancer
+    description: Debe pertenecer a la VCN y no solaparse con otra subred.
+    required: true
+    default: 10.0.2.0/24
+  bastion_subnet_name:
+    type: string
+    title: Nombre de la subred Bastion
+    description: Sólo crea la subred; no crea el servicio Bastion ni una VM.
+    required: true
+    default: subnet-oke-bastion-private
+  bastion_subnet_cidr:
+    type: string
+    title: CIDR de la subred Bastion
+    description: Debe pertenecer a la VCN y no solaparse con otra subred.
+    required: true
+    default: 10.0.3.0/24
+  pods_subnet_name:
+    type: string
+    title: Nombre de la subred de pods
+    description: 'Sólo para OCI VCN-Native: subred privada y regional de IP de pods.'
+    required: true
+    default: subnet-oke-pods-private
+    visible:
+      eq:
+      - ${cni_type}
+      - OCI_VCN_IP_NATIVE
+  pods_subnet_cidr:
+    type: string
+    title: CIDR de la subred de pods
+    description: 'Sólo para OCI VCN-Native: debe pertenecer a la VCN y no solaparse con otras subredes. Dimensiona
+      según nodos y pods por nodo.'
+    required: true
+    default: 10.0.32.0/19
+    visible:
+      eq:
+      - ${cni_type}
+      - OCI_VCN_IP_NATIVE
+  api_admin_cidrs:
+    type: string
+    title: CIDR administrativos adicionales
+    description: 'IPv4 separados por comas. Sólo habilita TCP/6443; requiere conectividad privada existente. Vacío:
+      sólo workers y subred Bastion.'
+    required: false
+    default: ''
+  lb_source_cidrs:
+    type: string
+    title: CIDR de clientes del LB
+    description: IPv4 separados por comas para las reglas de ingreso TCP del LB.
+    required: true
+    default: 0.0.0.0/0
+  lb_listener_ports:
+    type: string
+    title: Puertos TCP del LB
+    description: Puertos separados por comas, entre 1 y 65535. No crea listeners ni un LB.
+    required: true
+    default: 80,443
+  allow_worker_internet_tcp:
+    type: boolean
+    title: Permitir salida TCP de workers a Internet
+    description: 'Sólo Flannel: habilita TCP/ALL a 0.0.0.0/0 por NAT. OCI VCN-Native no crea esta ruta ni aplica
+      esta opción.'
+    required: false
+    default: true
+    visible:
+      eq:
+      - ${cni_type}
+      - FLANNEL_OVERLAY
+  allow_pod_internet_https:
+    type: boolean
+    title: Permitir salida HTTPS de pods a Internet
+    description: 'Sólo OCI VCN-Native: habilita la regla opcional TCP/443 a 0.0.0.0/0 por NAT.'
+    required: false
+    default: true
+    visible:
+      eq:
+      - ${cni_type}
+      - OCI_VCN_IP_NATIVE
+  allow_bastion_ssh:
+    type: boolean
+    title: Permitir SSH desde la subred Bastion
+    description: Reglas opcionales TCP/22 entre Bastion y workers. No abre SSH desde Internet.
+    required: false
+    default: false
