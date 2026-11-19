@@ -1,12 +1,12 @@
 # Stack de red OKE: Flannel u OCI VCN-Native
 
-Versión **1.1.0** para OCI Resource Manager. Crea una VCN nueva con API de Kubernetes privado, workers privados y subred pública para Load Balancers. El selector `cni_type` elige la topología y las reglas de los ejemplos 2 y 4 de Oracle. Está orientado a OKE con managed worker nodes.
+Versión **1.1.1** para OCI Resource Manager. Crea una VCN nueva con API de Kubernetes privado, workers privados y subred pública para Load Balancers. El selector `cni_type` elige la topología y las reglas de los ejemplos 2 y 4 de Oracle. Está orientado a OKE con managed worker nodes.
 
 Este stack crea **sólo la red**. El cluster y sus node pools se crean después con el mismo CNI.
 
 ## Descarga lista para Resource Manager
 
-[Descargar ZIP v1.1.0](https://github.com/jcordoba7/oci-oke-network-stack/releases/download/v1.1.0/oke-network-resource-manager-v1.1.0.zip) · [Checksum SHA-256](https://github.com/jcordoba7/oci-oke-network-stack/releases/download/v1.1.0/oke-network-resource-manager-v1.1.0.zip.sha256) · [Ver release](https://github.com/jcordoba7/oci-oke-network-stack/releases/tag/v1.1.0)
+[Descargar ZIP v1.1.1](https://github.com/jcordoba7/oci-oke-network-stack/releases/download/v1.1.1/oke-network-resource-manager-v1.1.1.zip) · [Checksum SHA-256](https://github.com/jcordoba7/oci-oke-network-stack/releases/download/v1.1.1/oke-network-resource-manager-v1.1.1.zip.sha256) · [Ver release](https://github.com/jcordoba7/oci-oke-network-stack/releases/tag/v1.1.1)
 
 Descarga el ZIP y cárgalo directamente como configuración de Terraform en Resource Manager. No necesitas comprimir el repositorio ni instalar Python. El generador de `scripts/` se mantiene para crear tu propio paquete.
 
@@ -71,13 +71,21 @@ No crea OKE, node pools, LB, listeners, Bastion, sesiones, bases de datos, Vault
 ## Desplegar en Resource Manager
 
 1. En la región de prueba, abre **Developer Services → Resource Manager → Stacks → Create stack**.
-2. Selecciona una fuente **GitHub** con este repositorio y directorio de trabajo raíz. También puedes cargar el ZIP generado con `python scripts/package_stack.py`, disponible en `dist/oke-network-resource-manager-v1.1.0.zip`. Los archivos Terraform y `schema.yaml` están en la raíz del ZIP.
+2. Selecciona una fuente **GitHub** con este repositorio y directorio de trabajo raíz. También puedes cargar el ZIP generado con `python scripts/package_stack.py`, disponible en `dist/oke-network-resource-manager-v1.1.1.zip`. Los archivos Terraform y `schema.yaml` están en la raíz del ZIP.
 3. Selecciona Terraform **1.5 o superior** disponible en Resource Manager.
 4. Elige el compartment de destino y el CNI. Define nombres, CIDR y opciones. La región se completa con la del stack.
 5. Ejecuta **Plan**, revisa los recursos propuestos y después **Apply**.
 6. Crea OKE con el **mismo CNI** y las subredes de los outputs.
 
-El compartment de recursos puede diferir del que guarda el stack. Se necesitan permisos de red en el destino y los habituales de Resource Manager, una región suscrita y límites disponibles. Resource Manager gestiona autenticación y estado; no hay credenciales ni backend en el ZIP. El ejemplo de CLI usa Bogotá (`sa-bogota-1`).
+El compartment de recursos puede diferir del que guarda el stack. Se necesitan permisos de red en el destino y los habituales de Resource Manager, una región suscrita y límites disponibles. Resource Manager gestiona autenticación y estado; no hay credenciales ni backend en el ZIP. En CLI debes indicar `region` explícitamente; el paquete no fija ninguna región.
+
+## Región de despliegue
+
+`region` es una variable obligatoria **sin valor predeterminado** en Terraform ni en `schema.yaml`. Resource Manager la completa con la región donde creas el stack y el provider OCI usa `region = var.region`. Por ejemplo, un stack nuevo en Ashburn debe mostrar `us-ashburn-1` en el output `oke_network_inputs.region`.
+
+Para CLI, especifica la región deseada en `terraform.tfvars` o con `-var="region=us-ashburn-1"`. El archivo `.example` no se carga automáticamente y no sustituye la región de Resource Manager.
+
+**Stacks existentes:** las versiones anteriores podían guardar `region=sa-bogota-1` entre sus variables. Cambiar el ZIP no garantiza que se reemplace ese valor persistido. Antes de ejecutar Plan, revisa y corrige las variables guardadas o crea un stack nuevo en la región de la prueba con esta versión. Cambiar el provider de región **no migra** VCN/subredes ya creadas; no cambies la región de un estado con recursos activos sin planificar su tratamiento.
 
 ## Reglas de seguridad
 
@@ -151,9 +159,11 @@ terraform validate
 terraform plan -var-file=terraform.tfvars
 ```
 
-`terraform test` requiere Terraform **1.7 o superior** y ejecuta **16 pruebas con mock_provider** para ambos CNI, parámetros propios, opciones y rechazos de datos inválidos. Los apply positivos son simulados, con limpieza automática; no contactan un tenancy.
+`terraform test` requiere Terraform **1.7 o superior** y ejecuta **19 pruebas con mock_provider** para ambos CNI, parámetros propios, opciones y rechazos de datos inválidos. Los apply positivos son simulados, con limpieza automática; no contactan un tenancy.
 
-Comprobado con Terraform **1.9.8**, provider OCI **9.13.0**, formato, `validate`, 16 pruebas y meta schema oficial de Resource Manager. La validación automatizada usa un proveedor simulado. Verifica permisos, límites y conectividad efectiva con Plan/Apply en tu tenancy.
+La versión 1.1.1 elimina los defaults regionales de Terraform y del formulario; incluye pruebas simuladas para Ashburn y São Paulo, además de rechazar región vacía. El empaquetador también comprueba que no reaparezca una región predeterminada.
+
+Comprobado con Terraform **1.9.8**, provider OCI **9.13.0**, formato, `validate`, 19 pruebas y meta schema oficial de Resource Manager. La validación automatizada usa un proveedor simulado. Verifica permisos, límites y conectividad efectiva con Plan/Apply en tu tenancy.
 
 ## Referencias
 

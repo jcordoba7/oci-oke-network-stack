@@ -2,7 +2,7 @@ title: 'Red OCI para OKE privado: Flannel o VCN-Native'
 description: VCN, cuatro subredes para Flannel o cinco para OCI VCN-Native, gateways, rutas y listas de seguridad.
   No crea OKE.
 schemaVersion: 1.1.0
-version: 1.1.0
+version: 1.1.1
 locale: en
 variableGroups:
 - title: Ubicación, CNI y nombres base
@@ -56,9 +56,9 @@ variables:
   region:
     type: string
     title: Región OCI
-    description: En Resource Manager se completa con la región del stack.
+    description: Resource Manager proporciona la región del stack. Sin valor predeterminado; en CLI debes indicarla
+      explícitamente.
     required: true
-    default: sa-bogota-1
     visible: false
   cni_type:
     type: enum

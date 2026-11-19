@@ -1,7 +1,7 @@
 # Para CLI local: autentica el provider OCI con tu método habitual.
 # Resource Manager toma región y compartment del formulario; no subas credenciales.
 compartment_ocid = "ocid1.compartment.oc1..REEMPLAZAR"
-region           = "sa-bogota-1"
+region           = "REEMPLAZAR_REGION" # Obligatoria en CLI; Resource Manager la proporciona.
 cni_type         = "FLANNEL_OVERLAY" # o "OCI_VCN_IP_NATIVE"
 name_prefix      = "oke-prod"
 vcn_name         = "vcn-oke-prod"

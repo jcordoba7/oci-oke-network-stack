@@ -10,10 +10,9 @@ variable "compartment_ocid" {
 }
 
 variable "region" {
-  description = "En Resource Manager se completa con la región del stack."
+  description = "Resource Manager proporciona la región del stack. Sin valor predeterminado; en CLI debes indicarla explícitamente."
   type        = string
   nullable    = false
-  default     = "sa-bogota-1"
 
   validation {
     condition     = length(trimspace(var.region)) > 0
