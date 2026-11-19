@@ -14,6 +14,50 @@ mock_provider "oci" {
 
 variables {
   compartment_ocid = "ocid1.compartment.oc1..test"
+  region           = "sa-bogota-1" # Explicit mock-test fixture, not a deployment default.
+}
+
+run "region_ashburn_from_stack" {
+  command = apply
+  variables {
+    region = "us-ashburn-1"
+  }
+  override_data {
+    target = data.oci_core_services.all
+    values = {
+      services = [{ id = "ocid1.service.oc1.iad.mock", name = "All IAD Services In Oracle Services Network", cidr_block = "all-iad-services-in-oracle-services-network", description = "Mock Ashburn" }]
+    }
+  }
+  assert {
+    condition     = output.oke_network_inputs.region == "us-ashburn-1" && alltrue([for r in oci_core_route_table.private["workers"].route_rules : r.destination_type != "SERVICE_CIDR_BLOCK" || r.destination == "all-iad-services-in-oracle-services-network"])
+    error_message = "La región y las rutas de servicios deben corresponder al valor recibido para Ashburn."
+  }
+}
+
+run "region_saopaulo_native_from_stack" {
+  command = apply
+  variables {
+    region   = "sa-saopaulo-1"
+    cni_type = "OCI_VCN_IP_NATIVE"
+  }
+  override_data {
+    target = data.oci_core_services.all
+    values = {
+      services = [{ id = "ocid1.service.oc1.gru.mock", name = "All GRU Services In Oracle Services Network", cidr_block = "all-gru-services-in-oracle-services-network", description = "Mock Sao Paulo" }]
+    }
+  }
+  assert {
+    condition     = output.oke_network_inputs.region == "sa-saopaulo-1" && alltrue([for r in oci_core_route_table.private["workers"].route_rules : r.destination == "all-gru-services-in-oracle-services-network"])
+    error_message = "VCN-Native también debe usar la región recibida y su servicio OSN regional."
+  }
+}
+
+run "reject_empty_region" {
+  command = plan
+  variables {
+    region = ""
+  }
+  expect_failures = [var.region]
 }
 
 run "default_network" {
